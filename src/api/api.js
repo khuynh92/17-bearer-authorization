@@ -34,7 +34,6 @@ router.post('/api/v1/pizza', auth, (req, res, next) => {
 });
 
 router.get('/api/v1/pizza', auth, (req, res, next) => {
-  console.log(req.id);
   if (req.id) {
     Pizza.find({ userID: req.id })
       .then(response => {
@@ -50,26 +49,33 @@ router.get('/api/v1/pizza/:id', auth, (req, res, next) => {
   if (req.id) {
     Pizza.findById(req.params.id)
       .then(response => {
+        if(response === null) {
+          next();
+        }
         if (JSON.stringify(response.userID) === JSON.stringify(req.id)) {
           res.send(response);
         } else {
           next('Unauthorized');
         }
       })
-      .catch(next);
+      .catch(() =>{
+        next();
+      });
   } else {
     next('Unauthorized');
   }
 });
 
 router.put('/api/v1/pizza/:id', auth, (req, res, next) => {
-  if (!Object.keys(req.body).length) {
-    next('400');
+  if (Object.keys(req.body).length === 0) {
+    next(400);
   }
-
   if (req.id) {
     Pizza.findById(req.params.id)
       .then(response => {
+        if(response === null) {
+          next();
+        }
         if(JSON.stringify(response.userID) === JSON.stringify(req.id)) {
           Pizza.findByIdAndUpdate(req.params.id, req.body, {new: true})
             .then(data => {
@@ -80,7 +86,9 @@ router.put('/api/v1/pizza/:id', auth, (req, res, next) => {
           next('Unauthorized');
         }
       })
-      .catch(next);
+      .catch(() => {
+        next();
+      });
   } else {
     next('Unauthorized');
   }
@@ -105,7 +113,9 @@ router.delete('/api/v1/pizza/:id', auth, (req,res,next) => {
           }
         }
       })
-      .catch(next);
+      .catch(() => {
+        next();
+      });
   } else {
     next('Unauthorized');
   }
